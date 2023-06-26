@@ -1,4 +1,4 @@
-# Nginxconf
+# Nginxconf and rm_nginxconf
 
 This script (nginxconf.py) is a Python script that automates the process of creating directories, configuring Nginx server settings, and creating symbolic links for domain and subdomain setups.
 
