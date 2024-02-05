@@ -39,4 +39,6 @@ python3 nginxconf.py -d domain.com
 python3 nginxconf.py -d domain.com -r
 ```
 
+## License
 
+This script is licensed under the [MIT License](LICENSE).
