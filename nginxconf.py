@@ -52,7 +52,6 @@ def restart_nginx():
         os.system("sudo systemctl restart nginx")
         print("Nginx restarted.")
         
-
 def delete_file(file_path):
     try:
         if os.path.isdir(file_path):
@@ -68,7 +67,8 @@ def delete_file(file_path):
     except Exception as e:
         print(f"An error occurred while deleting file or directory {file_path}: {str(e)}")
     
-    
+
+
 def delete_configuration(file_name):
     parts = file_name.split(".")
     if len(parts) == 2:
@@ -77,6 +77,26 @@ def delete_configuration(file_name):
     else:
         subdomain = parts[0]
         domain = ".".join(parts[1:])
+
+    if subdomain == "":
+        # Deleting main domain, remove associated subdomains first
+        subdomains = [f for f in os.listdir(f"/var/www/{domain}") if os.path.isdir(os.path.join(f"/var/www/{domain}", f))]
+        
+        if subdomains:
+            # Warn the user if there are associated subdomains
+            print(f"Warning: Deleting the main domain '{domain}' will also delete the subdomains:")
+            confirmation = input("Are you sure you want to proceed? (yes/no): ").lower()
+            
+            if confirmation != "yes":
+                print("Aborting deletion.")
+                sys.exit(1)
+
+            for sub in subdomains:
+                delete_configuration(f"{sub}.{domain}")
+
+        # Remove the main domain directories
+        delete_file(os.path.join("/var/www/", domain))
+        delete_file(os.path.join("/var/log/nginx/", domain))
 
     log_dir = os.path.join("/var/log/nginx/", domain, file_name)
     www_dir = os.path.join("/var/www/", domain, file_name)
@@ -90,6 +110,7 @@ def delete_configuration(file_name):
 
     print(f"Nginx configuration for {file_name} deleted.")
     
+
 
 def main():
     if len(sys.argv) < 3 or sys.argv[1] not in ['-a', '-d']:
