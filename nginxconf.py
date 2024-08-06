@@ -6,7 +6,6 @@ import subprocess
 import sys
 
 def add_configuration(file_name):
-    # Split the file name into subdomain and domain
     parts = file_name.split(".")
     if len(parts) == 2:
         subdomain = ""
@@ -15,40 +14,46 @@ def add_configuration(file_name):
         subdomain = parts[0]
         domain = ".".join(parts[1:])
 
-    # Check if the main domain exists
     if subdomain != "" and not os.path.exists(f"/var/www/{domain}"):
         print("The main domain does not exist. Please create the main domain before creating the subdomain.")
         sys.exit(1)
 
-    # Create paths for directories
     log_dir = os.path.join("/var/log/nginx/", domain, file_name)
     www_dir = os.path.join("/var/www/", domain, file_name)
 
-    # Create directories if they don't already exist
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(www_dir, exist_ok=True)
 
-    # Create a file in /etc/nginx/sites-available/ with the given file name
     nginx_dir = os.path.join("/etc/nginx/sites-available/", file_name)
     with open(nginx_dir, "w") as f:
-        f.write(f"server {{\n\n")
+        f.write(f"server {{\n")
         f.write(f"\troot /var/www/{domain}/{file_name};\n")
-        f.write(f"\tindex index.html index.htm index.nginx-debian.html;\n\n")
+        f.write(f"\tindex index.html index.htm index.nginx-debian.html index.php;\n\n")
         f.write(f"\tserver_name {file_name};\n\n")
+        
+        # PHP location block
         f.write(f"\tlocation / {{\n")
         f.write(f"\t\ttry_files $uri $uri/ =404;\n")
         f.write(f"\t}}\n\n")
+        
+        f.write(f"\tlocation ~ \\.php$ {{\n")
+        f.write(f"\t\tinclude snippets/fastcgi-php.conf;\n")
+        f.write(f"\t\tfastcgi_pass unix:/var/run/php/php8.1-fpm.sock;\n") # Adjust PHP version as needed
+        f.write(f"\t}}\n\n")
+        
+        f.write(f"\tlocation ~ /\\.ht {{\n")
+        f.write(f"\t\tdeny all;\n")
+        f.write(f"\t}}\n\n")
+
         f.write(f"\taccess_log /var/log/nginx/{domain}/{file_name}/access.log;\n")
         f.write(f"\terror_log /var/log/nginx/{domain}/{file_name}/error.log;\n")
         f.write(f"}}\n")
 
-    # Create a symbolic link to the file in /etc/nginx/sites-enabled/
     os.symlink(nginx_dir, f"/etc/nginx/sites-enabled/{file_name}")
     print(f"Adding Nginx configuration for {file_name}")
 
-
 def restart_nginx():
-    if "-r" in sys.argv: 
+    if "-r" in sys.argv:
         os.system("sudo systemctl restart nginx")
         print("Nginx restarted.")
         
@@ -67,8 +72,6 @@ def delete_file(file_path):
     except Exception as e:
         print(f"An error occurred while deleting file or directory {file_path}: {str(e)}")
     
-
-
 def delete_configuration(file_name):
     parts = file_name.split(".")
     if len(parts) == 2:
@@ -79,11 +82,9 @@ def delete_configuration(file_name):
         domain = ".".join(parts[1:])
 
     if subdomain == "":
-        # Deleting main domain, remove associated subdomains first
         subdomains = [f for f in os.listdir(f"/var/www/{domain}") if os.path.isdir(os.path.join(f"/var/www/{domain}", f))]
         
         if subdomains:
-            # Warn the user if there are associated subdomains
             print(f"Warning: Deleting the main domain '{domain}' will also delete the subdomains:")
             confirmation = input("Are you sure you want to proceed? (yes/no): ").lower()
             
@@ -94,7 +95,6 @@ def delete_configuration(file_name):
             for sub in subdomains:
                 delete_configuration(f"{sub}.{domain}")
 
-        # Remove the main domain directories
         delete_file(os.path.join("/var/www/", domain))
         delete_file(os.path.join("/var/log/nginx/", domain))
 
@@ -110,8 +110,6 @@ def delete_configuration(file_name):
 
     print(f"Nginx configuration for {file_name} deleted.")
     
-
-
 def main():
     if len(sys.argv) < 3 or sys.argv[1] not in ['-a', '-d']:
         print("Usage: python3 nginxconf.py [-a/-d] domain.com [-r]")
