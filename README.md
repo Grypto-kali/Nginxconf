@@ -24,33 +24,33 @@ If a subdomain, like `test.example.com`, is provided, the script will:
 
 To add a configuration, use the following command: 
 
-`python3 nginxconf.py -a domain.com`
+`sudo python3 nginxconf.py -a domain.com`
 
 To delete a configuration, use the following command: 
 
-`python3 nginxconf.py -d domain.com`
+`sudo python3 nginxconf.py -d domain.com`
 
 To delete a configuration and restart Nginx, use the following command: 
 
-`python3 nginxconf.py -d domain.com -r`
+`sudo python3 nginxconf.py -d domain.com -r`
 
 ## Usage (Bash)
 
 Before using the Bash script, make sure it is executable by running:
 
-`chmod +x nginxconf.sh`
+`sudo chmod +x nginxconf.sh`
 
 To add a configuration using the Bash script, use the following command: 
 
-`bash nginxconf.sh -a domain.com`
+`sudo bash nginxconf.sh -a domain.com`
 
 To delete a configuration using the Bash script, use the following command: 
 
-`bash nginxconf.sh -d domain.com`
+`sudo bash nginxconf.sh -d domain.com`
 
 To delete a configuration and restart Nginx using the Bash script, use the following command:
 
-`bash nginxconf.sh -d domain.com -r`
+`sudo bash nginxconf.sh -d domain.com -r`
 
 ## License
 
