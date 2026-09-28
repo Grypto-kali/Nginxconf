@@ -1,57 +1,80 @@
-This script facilitates the management of Nginx server configurations by providing the ability to add or delete configurations for domains and subdomains.
+# Nginx Configuration Manager
 
-### Main Domain Setup
+This script facilitates the management of Nginx server configurations by providing the ability to add or delete virtual host configurations for primary domains and subdomains.
 
-If a main domain name, like `example.com`, is provided, the script will:
+## Features
 
-- Create the log directory at `/var/log/nginx/example.com/example.com/`
-- Create the web directory at `/var/www/example.com/example.com/`
-- Generate the Nginx configuration file at `/etc/nginx/sites-available/example.com`
-- Create a symbolic link in `/etc/nginx/sites-enabled/` to enable the site
+- Creates required document roots (/var/www/...) and log directories (/var/log/nginx/...).
+- Generates Nginx server blocks with support for static files and PHP-FPM.
+- Handles symbolic links automatically in /etc/nginx/sites-enabled/.
+- Safe reload capability: Runs 'nginx -t' to test configuration syntax before reloading Nginx to prevent downtime.
 
-### Subdomain Setup
+--------------------------------------------------------------------------------
 
-If a subdomain, like `test.example.com`, is provided, the script will:
+## Directory Structure Strategy
 
-- Check if the main domain directory `/var/www/example.com/` exists
-- If the main domain directory exists, it will:
-  - Create the log directory at `/var/log/nginx/example.com/test.example.com/`
-  - Create the web directory at `/var/www/example.com/test.example.com/`
-  - Generate the Nginx configuration file at `/etc/nginx/sites-available/test.example.com`
-  - Create a symbolic link in `/etc/nginx/sites-enabled/` to enable the subdomain site
+### Main Domain Setup (example.com)
+- Log Directory: /var/log/nginx/example.com/example.com/
+- Web Root: /var/www/example.com/example.com/
+- Configuration File: /etc/nginx/sites-available/example.com
+- Symbolic Link: /etc/nginx/sites-enabled/example.com
 
-## Usage (Python)
+### Subdomain Setup (test.example.com)
+Note: The main domain directory /var/www/example.com/ must exist prior to creating a subdomain.
+- Log Directory: /var/log/nginx/example.com/test.example.com/
+- Web Root: /var/www/example.com/test.example.com/
+- Configuration File: /etc/nginx/sites-available/test.example.com
+- Symbolic Link: /etc/nginx/sites-enabled/test.example.com
 
-To add a configuration, use the following command: 
+--------------------------------------------------------------------------------
 
-`sudo python3 nginxconf.py -a domain.com`
+## Usage
 
-To delete a configuration, use the following command: 
+You can use either the Python or Bash version of the tool.
 
-`sudo python3 nginxconf.py -d domain.com`
+### Python Script (nginxconf.py)
 
-To delete a configuration and restart Nginx, use the following command: 
+Add Configuration:
+  sudo python3 nginxconf.py -a example.com
 
-`sudo python3 nginxconf.py -d domain.com -r`
+Add Configuration and Reload Nginx:
+  sudo python3 nginxconf.py -a example.com -r
 
-## Usage (Bash)
+Delete Configuration:
+  sudo python3 nginxconf.py -d example.com
 
-Before using the Bash script, make sure it is executable by running:
+Delete Configuration and Reload Nginx:
+  sudo python3 nginxconf.py -d example.com -r
 
-`sudo chmod +x nginxconf.sh`
+--------------------------------------------------------------------------------
 
-To add a configuration using the Bash script, use the following command: 
+### Bash Script (nginxconf.sh)
 
-`sudo bash nginxconf.sh -a domain.com`
+Make the script executable before running:
+  chmod +x nginxconf.sh
 
-To delete a configuration using the Bash script, use the following command: 
+Add Configuration:
+  sudo ./nginxconf.sh -a example.com
 
-`sudo bash nginxconf.sh -d domain.com`
+Add Configuration and Reload Nginx:
+  sudo ./nginxconf.sh -a example.com -r
 
-To delete a configuration and restart Nginx using the Bash script, use the following command:
+Delete Configuration:
+  sudo ./nginxconf.sh -d example.com
 
-`sudo bash nginxconf.sh -d domain.com -r`
+Delete Configuration and Reload Nginx:
+  sudo ./nginxconf.sh -d example.com -r
+
+--------------------------------------------------------------------------------
+
+## Prerequisites
+
+- Debian/Ubuntu-based system with Nginx installed.
+- PHP-FPM (Default socket path configured: unix:/var/run/php/php8.1-fpm.sock).
+- Root or sudo execution privileges.
+
+--------------------------------------------------------------------------------
 
 ## License
 
-This script is licensed under the [MIT License](LICENSE).
+This script is licensed under the MIT License (LICENSE).
